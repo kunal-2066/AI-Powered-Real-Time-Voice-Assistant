@@ -1,0 +1,382 @@
+/* ===== Reset & Base ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-bg: #0f0f1a;
+  --color-surface: #1a1a2e;
+  --color-surface-2: #16213e;
+  --color-primary: #6c63ff;
+  --color-primary-hover: #5a52d5;
+  --color-accent: #00d4aa;
+  --color-danger: #ff6b6b;
+  --color-warning: #ffa94d;
+  --color-text: #e8e8f0;
+  --color-text-muted: #9898b8;
+  --color-user-msg: #1e3a5f;
+  --color-assistant-msg: #1e2a1e;
+  --color-border: #2a2a4a;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ===== App Layout ===== */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ===== Header ===== */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== Connection Status ===== */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+}
+
+.connection-status.connected {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.connection-status.disconnected {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.connection-status.connected .status-dot {
+  animation: pulse 2s infinite;
+}
+
+/* ===== Main Content ===== */
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+  gap: 20px;
+}
+
+/* ===== Error Banner ===== */
+.error-banner {
+  background-color: rgba(255, 107, 107, 0.15);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  color: var(--color-danger);
+  font-size: 0.9rem;
+}
+
+/* ===== Unsupported Message ===== */
+.unsupported-message {
+  text-align: center;
+  padding: 40px;
+  color: var(--color-text-muted);
+}
+
+/* ===== Conversation Container ===== */
+.conversation-container {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 300px;
+  max-height: 50vh;
+  padding: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow);
+}
+
+.empty-state {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+/* ===== Messages ===== */
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  animation: fadeIn 0.3s ease;
+}
+
+.user-message {
+  align-self: flex-end;
+  background-color: var(--color-user-msg);
+  border-bottom-right-radius: var(--radius-sm);
+}
+
+.assistant-message {
+  align-self: flex-start;
+  background-color: var(--color-assistant-msg);
+  border: 1px solid var(--color-border);
+  border-bottom-left-radius: var(--radius-sm);
+}
+
+.message-role {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.user-message .message-role {
+  color: #7eb8f7;
+}
+
+.assistant-message .message-role {
+  color: var(--color-accent);
+}
+
+.message-text {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* ===== Processing Indicator ===== */
+.processing-indicator .message-text {
+  color: var(--color-text-muted);
+}
+
+.dot-animation {
+  display: inline-block;
+  animation: dotBounce 1s infinite;
+  font-size: 1.4rem;
+  letter-spacing: 2px;
+}
+
+/* ===== Live Transcript ===== */
+.live-transcript {
+  background: rgba(108, 99, 255, 0.1);
+  border: 1px dashed var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  color: var(--color-text-muted);
+  font-style: italic;
+  font-size: 0.9rem;
+  min-height: 40px;
+}
+
+/* ===== Controls ===== */
+.controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ===== Mic Button ===== */
+.mic-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--color-primary), #9b59b6);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.5), var(--shadow);
+  position: relative;
+}
+
+.mic-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-primary-hover), #8e44ad);
+  transform: scale(1.05);
+}
+
+.mic-button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.mic-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mic-button.listening {
+  background: linear-gradient(135deg, var(--color-danger), #c0392b);
+  animation: ripple 1.5s ease-out infinite;
+}
+
+.mic-button.processing {
+  background: linear-gradient(135deg, var(--color-warning), #e67e22);
+  animation: spin-border 1.2s linear infinite;
+}
+
+.mic-button.speaking {
+  background: linear-gradient(135deg, var(--color-accent), #27ae60);
+}
+
+.mic-button.disconnected {
+  background: #333355;
+}
+
+.mic-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.mic-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ===== Stop Speaking Button ===== */
+.stop-speaking-button {
+  background: transparent;
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stop-speaking-button:hover {
+  background: rgba(0, 212, 170, 0.15);
+}
+
+/* ===== Status Message ===== */
+.status-message {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  min-height: 20px;
+}
+
+/* ===== Animations ===== */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes ripple {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.6), var(--shadow);
+  }
+  70% {
+    box-shadow: 0 0 0 20px rgba(255, 107, 107, 0), var(--shadow);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0), var(--shadow);
+  }
+}
+
+@keyframes spin-border {
+  0% { box-shadow: 0 0 0 3px rgba(255, 169, 77, 0.8), var(--shadow); }
+  50% { box-shadow: 0 0 0 6px rgba(255, 169, 77, 0.3), var(--shadow); }
+  100% { box-shadow: 0 0 0 3px rgba(255, 169, 77, 0.8), var(--shadow); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dotBounce {
+  0%, 80%, 100% { opacity: 0.3; }
+  40% { opacity: 1; }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+  .app-header h1 {
+    font-size: 1.1rem;
+  }
+
+  .conversation-container {
+    max-height: 40vh;
+  }
+
+  .mic-button {
+    width: 80px;
+    height: 80px;
+  }
+
+  .mic-icon {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* ===== Scrollbar ===== */
+.conversation-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.conversation-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.conversation-container::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
