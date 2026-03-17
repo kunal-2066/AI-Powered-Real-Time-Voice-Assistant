@@ -1,103 +1,88 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import IconButton from '@mui/material/IconButton';
-import MicIcon from '@mui/icons-material/Mic';
-import StopIcon from '@mui/icons-material/Stop';
-import { useAudioRecorder } from 'react-audio-voice-recorder';
+import React, { useEffect } from "react";
+import IconButton from "@mui/material/IconButton";
+import MicIcon from "@mui/icons-material/Mic";
 import { io } from "socket.io-client";
 
-const host = 'http://localhost:5000/'
-const socket = io(host)
-
+// Connect to backend
+const socket = io("http://localhost:5000");
 
 export default function App() {
-  const {
-    startRecording,
-    stopRecording,
-    recordingBlob,
-    isRecording
-  } = useAudioRecorder();
-  const [audioUrl, setAudioUrl] = useState('');
-  const [audioKey, setAudioKey] = useState(Date.now()); // for updating the audio key
 
-
-  const handleStopRecording = () => {
-    stopRecording();
-
-  };
-
+  // Handle backend events
   useEffect(() => {
-    socket.on('connect', () => {
-      console.log('Connected to WebSocket server');
+    socket.on("connect", () => {
+      console.log("Connected to backend");
     });
 
-    socket.on('transcription', (data) => {
-      console.log('Transcription:', data.text);
-      // Optionally update the UI to show the transcription
-    });
+    // 🔊 Speak AI response (AUDIO ONLY)
+    socket.on("ai_reply", (data) => {
+      const utterance = new SpeechSynthesisUtterance(data.text);
 
-    socket.on('response', (data) => {
-      console.log('Response Text:', data.text);
-      // Optionally update the UI to show the response text
-    });
+      const voices = window.speechSynthesis.getVoices();
+      utterance.voice =
+        voices.find((v) => v.lang.startsWith("en")) || voices[0];
 
-    socket.on('audio_url', (data) => {
-      setAudioUrl(host + data.url)
-      setAudioKey(Date.now()); // Update the key to force refresh
-      console.log('Received audio URL:', host + data.url);
-      // Handle playing the received audio URL here
+      utterance.rate = 1;
+      utterance.pitch = 1;
+
+      window.speechSynthesis.speak(utterance);
     });
 
     return () => {
-      socket.off('connect');
-      socket.off('transcription');
-      socket.off('response');
-      socket.off('audio_url');
+      socket.off("connect");
+      socket.off("ai_reply");
     };
   }, []);
 
-  useEffect(() => {
-    if (isRecording) {
-      setAudioUrl('')
+  // 🎙️ Start listening (VOICE → TEXT, hidden)
+  const startListening = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Speech Recognition not supported. Use Google Chrome.");
+      return;
     }
-  }, [isRecording])
 
-  useEffect(() => {
-    if (recordingBlob) {
-      console.log('Sending audio blob to the server', recordingBlob);
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        const arrayBuffer = event.target.result;
-        socket.emit('audio_data', arrayBuffer)
-      };
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
 
-      reader.readAsArrayBuffer(recordingBlob);
-    }
-  }, [recordingBlob]);
+    recognition.onresult = (event) => {
+      const text = event.results[0][0].transcript;
+      socket.emit("user_text", { text });
+    };
 
+    recognition.onerror = (err) => {
+      console.error("Speech recognition error:", err);
+    };
+
+    recognition.start();
+  };
+
+  // Simple UI: ONLY MIC BUTTON
   return (
     <div
       style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f5f5f5",
       }}
     >
       <IconButton
-        sx={{
-          padding: '20px',
-          fontSize: '40px',
-          height: 'auto',
-          width: 'auto',
-        }}
         color="primary"
-        onClick={isRecording ? handleStopRecording : startRecording}
-        aria-label={isRecording ? "Stop recording" : "Start recording"}
+        onClick={startListening}
+        sx={{
+          padding: "30px",
+          boxShadow: 3,
+          backgroundColor: "white",
+        }}
       >
-        {isRecording ? <StopIcon sx={{ fontSize: '15rem' }} /> : <MicIcon sx={{ fontSize: '15rem' }} />}
+        <MicIcon sx={{ fontSize: "15rem" }} />
       </IconButton>
-      {audioUrl && <audio key={audioKey} src={audioUrl} controls autoPlay />}
     </div>
   );
 }
